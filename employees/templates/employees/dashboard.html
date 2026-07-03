@@ -1,0 +1,116 @@
+{% extends 'employees/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | EMS Pro{% endblock %}
+
+{% block content %}
+<!-- Top Header -->
+<div class="topbar">
+    <div class="page-title">
+        <h1>Dashboard Overview</h1>
+        <p>Real-time analytics and workforce insights</p>
+    </div>
+    <div class="topbar-actions">
+        <a href="{% url 'employee_add' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Add Employee
+        </a>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <!-- Card 1 -->
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Total Employees</span>
+            <span class="stat-value">{{ total_employees }}</span>
+        </div>
+        <div class="stat-icon-wrapper primary">
+            <i class="fa-solid fa-users-gear"></i>
+        </div>
+    </div>
+    
+    <!-- Card 2 -->
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Total Departments</span>
+            <span class="stat-value">{{ total_departments }}</span>
+        </div>
+        <div class="stat-icon-wrapper secondary">
+            <i class="fa-solid fa-sitemap"></i>
+        </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-label">Average Salary</span>
+            <span class="stat-value">${{ avg_salary|floatformat:2 }}</span>
+        </div>
+        <div class="stat-icon-wrapper warning">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Panel Grid -->
+<div class="dashboard-grid" style="margin-top: 1.5rem;">
+    <!-- Department breakdown panel -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title"><i class="fa-solid fa-chart-simple"></i> Department Distribution</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% if dept_distribution %}
+                {% for dept in dept_distribution %}
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.4rem;">
+                        <span class="badge badge-{{ dept.department|lower|cut:' ' }}">{{ dept.department }}</span>
+                        <span style="color: var(--text-secondary);">{{ dept.count }} Employee{{ dept.count|pluralize }}</span>
+                    </div>
+                    <!-- Progress Bar representing dynamic HSL coloring -->
+                    <div style="width: 100%; height: 8px; background-color: var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                        <div style="width: {% widthratio dept.count total_employees 100 %}%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: var(--radius-sm);"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">
+                    <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>No department data available. Add employees to get started.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent employees panel -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Additions</h3>
+            <a href="{% url 'employee_list' %}" style="font-size: 0.8rem; font-weight: 600; text-decoration: none; color: var(--primary);">View All</a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% if recent_employees %}
+                {% for emp in recent_employees %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div class="avatar" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                            {{ emp.first_name|slice:":1"|upper }}{{ emp.last_name|slice:":1"|upper }}
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.9rem; font-weight: 600;">{{ emp.get_full_name }}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ emp.designation }}</span>
+                        </div>
+                    </div>
+                    <span class="badge badge-{{ emp.department|lower|cut:' ' }}" style="font-size: 0.7rem;">{{ emp.department }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">
+                    <p>No recently added employees.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

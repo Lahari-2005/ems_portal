@@ -1,0 +1,48 @@
+{% extends 'employees/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | EMS Pro{% endblock %}
+
+{% block content %}
+<!-- Top Header -->
+<div class="topbar">
+    <div class="page-title">
+        <h1>{{ title }}</h1>
+        <p>Fill out the details below to save the record</p>
+    </div>
+    <div class="topbar-actions">
+        <a href="{% url 'employee_list' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Directory
+        </a>
+    </div>
+</div>
+
+<!-- Form Container -->
+<div class="form-container">
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            {% for field in form %}
+                <!-- Group fields, setting address to span full-width -->
+                <div class="form-group {% if field.name == 'address' %}full-width{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <span class="error-feedback"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'employee_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-circle-check"></i> {{ submit_text }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'employees/base.html' %}
+{% load static %}
+
+{% block title %}Employees Directory | EMS Pro{% endblock %}
+
+{% block content %}
+<!-- Top Header -->
+<div class="topbar">
+    <div class="page-title">
+        <h1>Employee Directory</h1>
+        <p>Manage, search, and edit employee records</p>
+    </div>
+    <div class="topbar-actions">
+        <a href="{% url 'employee_add' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Add Employee
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<form method="GET" action="{% url 'employee_list' %}" class="search-filter-container">
+    <div class="search-wrapper">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" name="search" class="search-input" placeholder="Search by name, ID, email, or designation..." value="{{ search_query }}">
+    </div>
+    
+    <div class="filter-wrapper">
+        <select name="department" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+                <option value="{{ dept }}" {% if dept_filter == dept %}selected{% endif %}>{{ dept }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    {% if search_query or dept_filter %}
+        <a href="{% url 'employee_list' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-xmark"></i> Clear Filters
+        </a>
+    {% endif %}
+    
+    <button type="submit" class="btn btn-primary" style="display: none;">Search</button>
+</form>
+
+<!-- Table Panel -->
+<div class="panel" style="padding: 1rem 1.5rem;">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Date of Joining</th>
+                    <th style="text-align: right; padding-right: 1.5rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for emp in page_obj %}
+                    <tr>
+                        <td style="font-weight: 700; color: var(--primary);">{{ emp.employee_id }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    {{ emp.first_name|slice:":1"|upper }}{{ emp.last_name|slice:":1"|upper }}
+                                </div>
+                                <span style="font-weight: 500;">{{ emp.get_full_name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ emp.department|lower|cut:' ' }}">{{ emp.department }}</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">{{ emp.designation }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td style="color: var(--text-secondary);">{{ emp.date_of_joining|date:"M d, Y" }}</td>
+                        <td style="text-align: right; padding-right: 1rem;">
+                            <div class="action-links" style="justify-content: flex-end;">
+                                <a href="{% url 'employee_edit' emp.pk %}" class="action-btn" title="Edit Employee">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <a href="{% url 'employee_delete' emp.pk %}" class="action-btn delete-btn" title="Delete Employee">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem 0; color: var(--text-secondary);">
+                            <i class="fa-solid fa-user-slash" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>No employee records found matching your criteria.</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination controls -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        <div class="pagination-info">
+            Showing Page <b>{{ page_obj.number }}</b> of <b>{{ page_obj.paginator.num_pages }}</b>
+        </div>
+        <div class="pagination-controls">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if dept_filter %}&department={{ dept_filter }}{% endif %}" class="pagination-link">
+                    <i class="fa-solid fa-angle-left"></i>
+                </a>
+            {% else %}
+                <span class="pagination-link disabled"><i class="fa-solid fa-angle-left"></i></span>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="pagination-link active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if dept_filter %}&department={{ dept_filter }}{% endif %}" class="pagination-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if dept_filter %}&department={{ dept_filter }}{% endif %}" class="pagination-link">
+                    <i class="fa-solid fa-angle-right"></i>
+                </a>
+            {% else %}
+                <span class="pagination-link disabled"><i class="fa-solid fa-angle-right"></i></span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
